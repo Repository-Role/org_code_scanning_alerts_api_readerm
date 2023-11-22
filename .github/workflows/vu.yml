@@ -1,0 +1,27 @@
+name: Vulnerable Workflow
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'
+
+    - name: Install dependencies
+      run: pip install -r requirements.txt
+
+    # Vulnerable step: Using untrusted input as part of the script
+    - name: Run a script
+      run: |
+        echo "Running script with user input"
+        python script.py ${{ github.event.pull_request.head.ref }}
